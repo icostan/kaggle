@@ -1,16 +1,17 @@
 import os
 import numpy as np
-import cv2
 from sklearn import preprocessing
-from utils import log
+from utils import log, bytesto
 from keras.preprocessing import image
 
 INPUT_FOLDER = 'input/'
 TRAIN_FOLDER = INPUT_FOLDER + 'train/'
-TEST_FOLDER = INPUT_FOLDER + 'test_stg2/'
+TEST1_FOLDER = INPUT_FOLDER + 'test_stg1/'
+TEST2_FOLDER = INPUT_FOLDER + 'test_stg2/'
 
 # ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
 SIZE = 128
+
 
 def load_train_data(categories, size=SIZE, verbose=False):
     x = []
@@ -19,7 +20,7 @@ def load_train_data(categories, size=SIZE, verbose=False):
     for t in categories:
         folder = TRAIN_FOLDER + t
         files = os.listdir(folder)
-        log(t, str(len(files)) + ' files')
+        log(t, len(files), suffix='files')
         for filename in files:
             img = load_image(folder + '/' + filename, expand_dims=False)
             x.append(img)
@@ -28,13 +29,14 @@ def load_train_data(categories, size=SIZE, verbose=False):
 
     X = normalize(np.array(x))
     log('X shape', X.shape)
-    log('X size', bytesto(X.nbytes, 'k'))
+    log('X size', bytesto(X.nbytes, 'm', suffix='MB'))
 
     Y = preprocessing.LabelEncoder().fit_transform(np.array(y))
     log('Y shape', Y.shape)
-    log('Y size', bytesto(Y.nbytes, 'k'))
+    log('Y size', bytesto(Y.nbytes, 'k'), suffix='KB')
 
     return X, Y
+
 
 def load_image(path, size=SIZE, expand_dims=True):
     img = image.load_img(path, target_size=(size, size))
@@ -43,16 +45,31 @@ def load_image(path, size=SIZE, expand_dims=True):
         X = np.expand_dims(X, axis=0)
     return X
 
-def load_test_data():
-    t = []
-    files = os.listdir(TEST_FOLDER)
+
+def load_test1_data():
+    return load_test_data(TEST1_FOLDER)
+
+
+def load_test2_data():
+    return load_test_data(TEST2_FOLDER)
+
+
+def load_test_data(folder):
+    T = []
+    files = os.listdir(folder)
     log('Status', 'Processing... ' + str(len(files)) + ' files')
     for filename in files:
-        path = TEST_FOLDER + '/' + filename
+        path = folder + '/' + filename
         img = load_image(path, expand_dims=False)
-        t.append(img)
+        T.append(img)
     log('Status', 'DONE')
-    T = normalize(np.array(t))
+    T = normalize(np.array(T))
     log('Shape', T.shape)
-    log('Size', bytesto(t.nbytes, 'k'))
+    log('Size', bytesto(T.nbytes, 'm'), suffix='MB')
     return T, files
+
+
+def normalize(X):
+    X_train = X.astype('float32')
+    X_train /= 255
+    return X_train
