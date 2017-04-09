@@ -2,23 +2,31 @@ import numpy as np
 from keras.models import load_model
 from keras.preprocessing import image
 from vis.visualization import visualize_cam
+from vis.utils import utils
 import matplotlib.pyplot as plt
+import dataset
 
-TYPES = ['BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK']
 
 model = load_model('fisheries.h5')
 
-img_path = 'output/train/DOL/img_00165.jpg'
-img = image.load_img(img_path, target_size=(128, 128))
-x = image.img_to_array(img)
-print(x.shape)
-X = np.expand_dims(x, axis=0)
+path = 'input/test_stg1/img_00009.jpg'
+img = utils.load_img(path, target_size=(dataset.SIZE, dataset.SIZE))
+X = dataset.load_image(path)
 print(X.shape)
+# print(X[0])
 
 preds = model.predict(X)
 pred_class = preds.argmax()
 print('Predicted:' + str(preds))
-print('Predicted:' + TYPES[pred_class])
+print('Predicted:' + dataset.TYPES[pred_class])
 
-heatmap = visualize_cam(model, 5, [pred_class], img)
-plt.imshow(heatmap)
+plt.imshow(img)
+plt.show()
+
+idx = [2, 6, 8, 13]
+for i in idx:
+    print(model.layers[i])
+    heatmap = visualize_cam(model, i, [pred_class], img)
+    plt.imshow(heatmap)
+    plt.show()
+

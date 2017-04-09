@@ -9,8 +9,8 @@ TRAIN_FOLDER = INPUT_FOLDER + 'train/'
 TEST1_FOLDER = INPUT_FOLDER + 'test_stg1/'
 TEST2_FOLDER = INPUT_FOLDER + 'test_stg2/'
 
-# ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
-SIZE = 128
+TYPES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
+SIZE = 150
 
 
 def load_train_data(categories, size=SIZE, verbose=False):
@@ -22,14 +22,14 @@ def load_train_data(categories, size=SIZE, verbose=False):
         files = os.listdir(folder)
         log(t, len(files), suffix='files')
         for filename in files:
-            img = load_image(folder + '/' + filename, expand_dims=False)
+            img = load_image(folder + '/' + filename, size=size, expand_dims=False)
             x.append(img)
             y.append(t)
     log('Status', 'DONE')
 
     X = normalize(np.array(x))
     log('X shape', X.shape)
-    log('X size', bytesto(X.nbytes, 'm', suffix='MB'))
+    log('X size', bytesto(X.nbytes, 'm'), suffix='MB')
 
     Y = preprocessing.LabelEncoder().fit_transform(np.array(y))
     log('Y shape', Y.shape)
@@ -42,7 +42,7 @@ def load_image(path, size=SIZE, expand_dims=True):
     img = image.load_img(path, target_size=(size, size))
     X = image.img_to_array(img)
     if expand_dims:
-        X = np.expand_dims(X, axis=0)
+        X = np.expand_dims(normalize(X), axis=0)
     return X
 
 
@@ -55,15 +55,15 @@ def load_test2_data():
 
 
 def load_test_data(folder):
-    T = []
+    t = []
     files = os.listdir(folder)
     log('Status', 'Processing... ' + str(len(files)) + ' files')
     for filename in files:
         path = folder + '/' + filename
         img = load_image(path, expand_dims=False)
-        T.append(img)
+        t.append(img)
     log('Status', 'DONE')
-    T = normalize(np.array(T))
+    T = normalize(np.array(t))
     log('Shape', T.shape)
     log('Size', bytesto(T.nbytes, 'm'), suffix='MB')
     return T, files
