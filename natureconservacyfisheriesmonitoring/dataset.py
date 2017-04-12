@@ -1,8 +1,10 @@
 import os
 import numpy as np
 from sklearn import preprocessing
-from utils import log, bytesto
 from keras.preprocessing import image
+
+from utils import log, bytesto
+import annotations
 
 INPUT_FOLDER = 'input/'
 TRAIN_FOLDER = INPUT_FOLDER + 'train/'
@@ -10,10 +12,35 @@ TEST1_FOLDER = INPUT_FOLDER + 'test_stg1/'
 TEST2_FOLDER = INPUT_FOLDER + 'test_stg2/'
 
 TYPES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
-SIZE = 150
+SIZE = 128
 
+def load_regression_data(categories, size=SIZE, verbose=False):
+    x = []
+    y = []
+    log('Status', 'Processing... ' + str(categories))
+    for t in categories:
+        folder = TRAIN_FOLDER + t
+        files = os.listdir(folder)
+        log(t, len(files), suffix='files')
+        for filename in files:
+            img = load_image(folder + '/' + filename, size=size, expand_dims=False)
+            a = annotations.for_image(filename, t)
+            if a != None:
+                x.append(img)
+                y.append([a['x'], a['y']])
+    log('Status', 'DONE')
 
-def load_train_data(categories, size=SIZE, verbose=False):
+    X = normalize(np.array(x))
+    log('X shape', X.shape)
+    log('X size', bytesto(X.nbytes, 'm'), suffix='MB')
+
+    Y = np.array(y)
+    log('Y shape', Y.shape)
+    log('Y size', bytesto(Y.nbytes, 'k'), suffix='KB')
+
+    return X, Y
+
+def load_train_data(categories, size=SIZE, localization=True, verbose=False):
     x = []
     y = []
     log('Status', 'Processing... ' + str(categories))

@@ -1,22 +1,26 @@
+import json
+import cv2
+import os
+import skimage as ski
+import skimage.io as io
+from PIL import Image
 import numpy as np
 from keras.models import load_model
 from keras.preprocessing import image
 from vis.visualization import visualize_cam
 from vis.utils import utils
 import matplotlib.pyplot as plt
+import matplotlib.patches as pts
+
 import dataset
-from matplotlib.patches import Rectangle
-import json
-import cv2
-import os
-import skimage as ski
-from PIL import Image
+import annotations
+from utils import log
 
 
 def visualize():
     model = load_model('fisheries.h5')
 
-    path = 'input/test_stg1/img_00009.jpg'
+    path = './input/train/ALB/img_00003.jpg'
     img = utils.load_img(path, target_size=(dataset.SIZE, dataset.SIZE))
     X = dataset.load_image(path)
     print(X.shape)
@@ -37,42 +41,56 @@ def visualize():
         plt.imshow(heatmap)
         plt.show()
 
-
 def show_annotated_images():
-    fish = 'DOL'
+    fish = 'ALB'
     fish_path = 'input/train/{fish}/'.format(fish=fish)
 
     files = os.listdir(fish_path)
-    for filename in files:
+    for filename in files[:5]:
         img = Image.open(fish_path + filename)
-        a = annotation(filename, fish)
+        a = annotations.for_image(filename, fish)
 
         x = a['x']
         y = a['y']
-        h = a['height']
-        w = a['width']
+        size = max(a['width'], a['height'])
+        h = size
+        w = size
 
-        fish_img = img.crop((x, y, x + w, y + h))
-        plt.imshow(fish_img)
+        # fish_img = img.crop((x, y, x + w, y + h))
+        # plt.imshow(fish_img)
 
-        # plt.gca().add_patch(
-        #     Rectangle((a['x'], a['y']), a['width'], a['height'], fill=None))
+        # print(str(x) + ':' + str(y) + ' ' + str(w) + ':' + str(h))
+        log('Size', size)
+
+        plt.gca().add_patch(
+            Rectangle((a['x'], a['y']), w, h, fill=None))
+        plt.imshow(img)
 
         plt.show()
 
+def fish_path(fish):
+    return 'input/train/{fish}/'.format(fish=fish)
 
-def annotation(filename, fish):
-    for a in annotations(fish):
-        if a['filename'] == filename:
-            return a['annotations'][0]
+def bounding_boxes():
+    test_path = 'input/test_stg2/'
+    model_x = load_model('fisheries-localization-x.h5')
+    model_y = load_model('fisheries-localization-y.h5')
 
+    files = os.listdir(test_path)
+    for filename in files:
+        file_path = test_path + filename
+        img = io.imread(file_path)
+        X = dataset.load_image(file_path)
 
-def annotations(fish='lag'):
-    fish = fish.lower()
-    path = 'annotations/{fish}_labels.json'.format(fish=fish)
-    with open(path) as data_file:
-        annotations = json.load(data_file)
-    return annotations
+        pred_x = model_x.predict(X)
+        pred_y = model_y.predict(X)
+        print(str(pred_x) + ',' + str(pred_y))
 
+        plt.imshow(img)
+        plt.gca().add_patch(pts.Circle((pred_x[0,0], pred_y[0,0]),50))
+        plt.gca().add_patch(pts.Rectangle((pred_x[0,0], pred_y[0,0]), 300, 300, fill=None))
+        plt.show()
 
-show_annotated_images()
+# show_annotated_images()
+# visualize()
+bounding_boxes()
