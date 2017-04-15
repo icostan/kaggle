@@ -13,12 +13,12 @@ def onehot(y):
 
 
 def scale(x):
-    scaler = preprocessing.MinMaxScaler()
+    scaler = preprocessing.StandardScaler()
     scaler.fit(x)
     X = scaler.transform(x)
     X = pd.DataFrame(X)
     log('X', X.shape)
-    return X.values
+    return X.values, scaler
 
 
 def label_encoder(labels, title=''):
