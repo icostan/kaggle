@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from keras.utils import to_categorical
-from sklearn import preprocessing
+from sklearn import preprocessing as pp
+from sklearn import feature_extraction as fe
 
 from utils import log
 
@@ -13,7 +14,7 @@ def onehot(y):
 
 
 def scale(x):
-    scaler = preprocessing.StandardScaler()
+    scaler = pp.StandardScaler()
     scaler.fit(x)
     X = scaler.transform(x)
     X = pd.DataFrame(X)
@@ -22,7 +23,15 @@ def scale(x):
 
 
 def label_encoder(labels, title=''):
-    le = preprocessing.LabelEncoder()
+    le = pp.LabelEncoder()
     le.fit(labels)
     log(title, len(le.classes_))
     return le
+
+
+def word_encoder(words, title='', max_features=100, stop_words=[]):
+    sw = fe.text.ENGLISH_STOP_WORDS.union(stop_words)
+    cv = fe.text.CountVectorizer(stop_words=sw, max_features=max_features)
+    cv.fit(words)
+    log(title, cv.get_feature_names())
+    return cv

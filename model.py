@@ -14,6 +14,8 @@ def keras_classification(no_features, no_labels):
     model = Sequential()
     model.add(Dense(units=2 * no_features, input_dim=no_features))
     model.add(Activation('relu'))
+    model.add(Dense(units=no_features))
+    model.add(Activation('relu'))
     model.add(Dense(units=no_labels))
     model.add(Activation('softmax'))
     return model
