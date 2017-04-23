@@ -24,9 +24,9 @@ def kbest_filter(x, y, feature_names, k=10):
     selector = fs.SelectKBest(fs.chi2, k=k)
     xp = selector.fit_transform(x, y)
     features = selected_features(selector, feature_names)
-    log('KBest', features)
+    # log('KBest', features)
     log('X', xp.shape)
-    return pd.DataFrame(xp, columns=features, index=x.index)
+    return pd.DataFrame(xp, columns=features, index=x.index), selector
 
 
 def selected_features(selector, feature_names):
