@@ -10,11 +10,18 @@ import tensorflow as tf
 import tflearn
 
 
-def keras_classification(no_features, no_labels):
+def keras_single_classification(no_features):
     model = Sequential()
-    model.add(Dense(units=2 * no_features, input_dim=no_features))
+    model.add(Dense(units=no_features, input_dim=no_features))
     model.add(Activation('relu'))
-    model.add(Dense(units=no_features))
+    model.add(Dense(units=1))
+    model.add(Activation('sigmoid'))
+    return model
+
+
+def keras_multi_classification(no_features, no_labels):
+    model = Sequential()
+    model.add(Dense(units=no_features, input_dim=no_features))
     model.add(Activation('relu'))
     model.add(Dense(units=no_labels))
     model.add(Activation('softmax'))

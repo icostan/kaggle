@@ -7,9 +7,9 @@ from sklearn import feature_extraction as fe
 from utils import log
 
 
-def onehot(y):
+def onehot(y, title='Y'):
     Y = to_categorical(y)
-    log('Y', Y.shape)
+    log(title, Y.shape)
     return Y
 
 
@@ -34,5 +34,5 @@ def word_encoder(words, title='', max_features=100, stop_words=[]):
     cv = fe.text.TfidfVectorizer(
         stop_words=sw, max_features=max_features, use_idf=False, norm=None, binary=True)
     cv.fit(words)
-    log(title, cv.get_feature_names())
+    log(title, len(cv.get_feature_names()))
     return cv
