@@ -13,7 +13,9 @@ import tflearn
 def keras_single_classification(no_features):
     model = Sequential()
     model.add(Dense(units=no_features, input_dim=no_features))
-    model.add(Activation('relu'))
+    model.add(Activation('tanh'))
+    model.add(Dense(units=int(no_features / 2)))
+    model.add(Activation('tanh'))
     model.add(Dense(units=1))
     model.add(Activation('sigmoid'))
     return model
