@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from difflib import SequenceMatcher
 from sklearn import feature_extraction as fe
+from nltk.corpus import stopwords
+from nltk import word_tokenize, ngrams
+import seaborn as sns
 
 import sys
 import os
@@ -154,6 +157,9 @@ def load_words_data(data):
     return data.apply(shared_words, axis=1, raw=True)
 
 
+#
+# frequencies
+#
 def questions(data):
     q = data.question1.append(data.question2)
     return pd.DataFrame(q.value_counts())
@@ -175,3 +181,92 @@ def load_freqs1_data(data, questions):
 def load_freqs2_data(data, questions):
     log('Loading freqs2...')
     return data.apply(freq2, questions=questions, axis=1, raw=True)
+
+
+#
+# n-grams
+#
+stops = set(stopwords.words('english'))
+color = sns.color_palette()
+
+
+def get_stops_ratio(row):
+    q1stops = set(row["stops_ques1"])
+    return float(max(len(q1stops), 0)) / max(len(set(q1stops.union(row["stops_ques2"]))), 1)
+
+
+def load_stops(data):
+    log('Loading stops...')
+    data["stops_ques1"] = data['question1'].apply(get_stops)
+    data["stops_ques2"] = data['question2'].apply(get_stops)
+    data["stops_ratio"] = data.apply(get_stops_ratio, axis=1)
+
+
+def get_words(que):
+    # TODO: try stemming and lemminga
+    return word_tokenize(str(que).lower())
+
+
+def get_stops(que):
+    return [word for word in get_words(que) if word in stops]
+
+
+def get_unigrams(que):
+    return [word for word in get_words(que) if word not in stops]
+
+
+def get_common_unigrams(row):
+    return len(set(row["unigrams_ques1"]).intersection(set(row["unigrams_ques2"])))
+
+
+def get_common_unigram_ratio(row):
+    return float(row["unigrams_common_count"]) / max(len(set(row["unigrams_ques1"]).union(set(row["unigrams_ques2"]))), 1)
+
+
+def load_unigrams(data):
+    log('Loading unigrams...')
+    data["unigrams_ques1"] = data['question1'].apply(get_unigrams)
+    data["unigrams_ques2"] = data['question2'].apply(get_unigrams)
+    data["unigrams_common_count"] = data.apply(get_common_unigrams, axis=1)
+    data["unigrams_common_ratio"] = data.apply(
+        get_common_unigram_ratio, axis=1)
+
+
+def get_bigrams(que):
+    return [i for i in ngrams(que, 2)]
+
+
+def get_common_bigrams(row):
+    return len(set(row["bigrams_ques1"]).intersection(set(row["bigrams_ques2"])))
+
+
+def get_common_bigram_ratio(row):
+    return float(row["bigrams_common_count"]) / max(len(set(row["bigrams_ques1"]).union(set(row["bigrams_ques2"]))), 1)
+
+
+def load_bigrams(data):
+    log('Loading bigrams...')
+    data["bigrams_ques1"] = data["unigrams_ques1"].apply(get_bigrams)
+    data["bigrams_ques2"] = data["unigrams_ques2"].apply(get_bigrams)
+    data["bigrams_common_count"] = data.apply(get_common_bigrams, axis=1)
+    data["bigrams_common_ratio"] = data.apply(get_common_bigram_ratio, axis=1)
+
+
+def get_trigrams(que):
+    return [i for i in ngrams(que, 3)]
+
+
+def get_common_trigrams(row):
+    return len(set(row["trigrams_ques1"]).intersection(set(row["trigrams_ques2"])))
+
+
+def get_common_trigram_ratio(row):
+    return float(row["trigrams_common_count"]) / max(len(set(row["trigrams_ques1"]).union(set(row["trigrams_ques2"]))), 1)
+
+
+def load_trigrams(data):
+    log('Loading trigrams...')
+    data["trigrams_ques1"] = data["unigrams_ques1"].apply(get_trigrams)
+    data["trigrams_ques2"] = data["unigrams_ques2"].apply(get_trigrams)
+    data["trigrams_common_count"] = data.apply(get_common_trigrams, axis=1)
+    data["trigrams_common_ratio"] = data.apply(get_common_bigram_ratio, axis=1)
