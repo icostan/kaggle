@@ -1,10 +1,11 @@
 import numpy as np
 from collections import Counter
+from functools import wraps
 
 
-def log(label, text, suffix=''):
+def log(label, text='', suffix=''):
     """Prints labeled info"""
-    print(str(label) + ': ' + str(text) + ' ' + str(suffix))
+    print(str(label) + ' * ' + str(text) + ' ' + str(suffix))
 
 
 def softmax(x, axis=0):
@@ -30,3 +31,27 @@ def get_class_weights(y, smooth_factor=0):
     majority = max(counter.values())
 
     return {cls: float(majority / count) for cls, count in counter.items()}
+
+
+def memoize(function):
+    memo = {}
+
+    @wraps(function)
+    def wrapper(*args):
+        if args in memo:
+            return memo[args]
+        else:
+            rv = function(*args)
+            memo[args] = rv
+            return rv
+    return wrapper
+
+
+def benchmark(function):
+    @wraps(function)
+    def wrapper(*args):
+        log('Running', function)
+        result = function(*args)
+        log('Done', 0)
+        return result
+    return wrapper

@@ -18,7 +18,7 @@ def scale(x):
     scaler.fit(x)
     X = scaler.transform(x)
     X = pd.DataFrame(X, index=x.index, columns=x.columns)
-    log('X', X.shape)
+    # log('X', X.shape)
     return X, scaler
 
 
@@ -31,7 +31,7 @@ def label_encoder(labels, title=''):
 
 def word_encoder(words, title='', max_features=100, stop_words=[]):
     sw = fe.text.ENGLISH_STOP_WORDS.union(stop_words)
-    cv = fe.text.TfidfVectorizer(stop_words=sw, max_features=max_features) 
+    cv = fe.text.TfidfVectorizer(stop_words=sw, max_features=max_features)
     cv.fit(words)
     log(title, len(cv.get_feature_names()))
     return cv
