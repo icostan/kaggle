@@ -9,7 +9,7 @@ sns.set_style("whitegrid")
 
 
 def plot_correlation_map(df):
-    _, ax = plt.subplots(figsize=(15, 10))
+    _, ax = plt.subplots(figsize=(16, 10))
     _ = sns.heatmap(
         df.corr(),
         cmap="RdYlGn",
@@ -96,3 +96,11 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+def boxplot(data, x, y):
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(x=x, y=y, data=data)
+    plt.xlabel(x, fontsize=12)
+    plt.ylabel(y, fontsize=12)
+    plt.show()

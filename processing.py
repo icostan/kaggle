@@ -29,9 +29,19 @@ def label_encoder(labels, title=''):
     return le
 
 
-def word_encoder(words, title='', max_features=100, stop_words=[]):
+def tfidf_encoder(words, title='corpus', max_features=100, stop_words=[]):
     sw = fe.text.ENGLISH_STOP_WORDS.union(stop_words)
     cv = fe.text.TfidfVectorizer(stop_words=sw, max_features=max_features)
     cv.fit(words)
     log(title, len(cv.get_feature_names()))
+    return cv
+
+
+def count_encoder(words, title='corpus', max_features=100, stop_words=[]):
+    sw = fe.text.ENGLISH_STOP_WORDS.union(stop_words)
+    cv = fe.text.CountVectorizer(
+        stop_words=sw, max_features=max_features)
+    cv.fit(words)
+    log(title + ' features', len(cv.get_feature_names()))
+    log(title + ' stops', len(cv.stop_words_))
     return cv
