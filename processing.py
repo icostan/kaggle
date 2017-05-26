@@ -40,7 +40,7 @@ def tfidf_encoder(words, title='corpus', max_features=100, stop_words=[]):
 def count_encoder(words, title='corpus', max_features=100, stop_words=[]):
     sw = fe.text.ENGLISH_STOP_WORDS.union(stop_words)
     cv = fe.text.CountVectorizer(
-        stop_words=sw, max_features=max_features)
+        stop_words=sw, max_features=max_features, binary=True)
     cv.fit(words)
     log(title + ' features', len(cv.get_feature_names()))
     log(title + ' stops', len(cv.stop_words_))
